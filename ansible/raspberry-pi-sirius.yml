@@ -1,0 +1,74 @@
+---
+- name: Ansible template for setting up Sirius on a Raspberry Pi
+  hosts: controlled-pi
+  vars:
+    pi_name: sirius
+  remote_user: pi
+  become: yes
+  become_method: sudo
+  # Include whichever roles make sense here
+  roles:
+    - renamed-pi
+    - nm-wireless
+
+  pre_tasks:
+    - name: Update apt
+      apt: upgrade=dist update_cache=yes
+      become: true
+
+  tasks:
+  - name: Install git
+    apt: name=git state=present
+  - name: Clone the sirius repo
+    git: repo=git://github.com/DoESLiverpool/sirius.git dest=/home/pi/sirius
+    become: false
+  - name: Install python
+    apt: name=python state=present
+  - name: Install python-pip
+    apt: name=python-pip state=present
+  - name: Install libpq-dev
+    apt: name=libpq-dev state=present
+  - name: Install phantomjs
+    apt: name=phantomjs state=present
+  - name: Install libfreetype6-dev
+    apt: name=libfreetype6-dev state=present
+  - name: Install fontconfig
+    apt: name=fontconfig state=present
+  - name: Install libgstreamer1.0-dev
+    apt: name=libgstreamer1.0-dev state=present
+  - name: Install python-dev
+    apt: name=python-dev state=present
+  - name: Install wget
+    apt: name=wget state=present
+  - name: Install libjpeg-dev
+    apt: name=libjpeg-dev state=present
+  - name: Install libjpeg-dev
+    apt: name=libjpeg-dev state=present
+  - name: Install zlib1g-dev
+    apt: name=zlib1g-dev state=present
+  - name: Install postgresql
+    apt: name=postgresql state=present
+  - name: Ensure we have the sirius database in postgresql
+    become: true
+    become_user: postgres
+    postgresql_db:
+      name: sirius
+  - name: Ensure there's a user for the sirius database
+    become: true
+    become_user: postgres
+    postgresql_user:
+      db: sirius
+      name: stampantina
+      password: bubblino
+  - name: Make sure pip is at latest version
+    pip:
+      name: pip
+      extra_args: --upgrade
+  - name: Install pip requirements
+    pip:
+      requirements: /home/pi/sirius/requirements.txt
+  - name: Install honcho
+    pip:
+      name: honcho
+  - name: Ready for you to customise!
+    debug: msg='Replace this step with the ones you need to set up the Raspberry Pi to do what you want it to do'
